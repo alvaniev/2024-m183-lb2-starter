@@ -1,0 +1,676 @@
+{
+	"info": {
+		"_postman_id": "19fd86e4-4d27-4130-a2e4-50f7488f2f2d",
+		"name": "2024-m183-lb1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9910444"
+	},
+	"item": [
+		{
+			"name": "signup - valid username pwd",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /users - valid username-pwd - status\", () => {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"const avatarUrl = res.avatar;",
+							"const avatar = avatarUrl.substring(avatarUrl.lastIndexOf(\"/\")+1);",
+							"pm.environment.set(\"user_6_id\", res.id);",
+							"pm.test(\"POST /users - valid username-pwd - response\", () => {",
+							"  pm.expect(res.username).to.eql(pm.environment.get(\"user_6_username\"));",
+							"  pm.expect(res.firstname).to.eql(pm.environment.get(\"user_6_firstname\"));",
+							"  pm.expect(res.lastname).to.eql(pm.environment.get(\"user_6_lastname\"));",
+							"  pm.expect(avatar).to.eql(pm.environment.get(\"user_6_avatar\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let username6 = pm.environment.get(\"user_6_username\");",
+							"let userid6;",
+							"",
+							"pm.sendRequest({",
+							"    url: `http://localhost:3000/users?username=${username6}`,",
+							"    header: {",
+							"        \"Content-Type\": \"application/json\"",
+							"    }",
+							"}, (err, res) => {",
+							"    let resBody = res.json()[0];",
+							"    if (resBody) {",
+							"        userid6 = resBody.id",
+							"        pm.sendRequest({ url: `http://localhost:3000/users/${userid6}`, method: \"DELETE\" }, (err, res) => { });",
+							"    }",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_6_username}}\",\n    \"pwd\": \"{{user_6_pwd}}\",\n    \"firstname\": \"{{user_6_firstname}}\",\n    \"lastname\": \"{{user_6_lastname}}\",\n    \"avatar\": \"{{user_6_avatar}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signup - invalid username",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /users - username must be email-address - status\", () => {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /users - username must be email-address - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"invalid_data\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let username6 = pm.environment.get(\"user_6_username\");",
+							"let userid6;",
+							"",
+							"pm.sendRequest({",
+							"    url: `http://localhost:3000/users?username=${username6}`,",
+							"    header: {",
+							"        \"Content-Type\": \"application/json\"",
+							"    }",
+							"}, (err, res) => {",
+							"    let resBody = res.json()[0];",
+							"    if (resBody) {",
+							"        userid6 = resBody.id",
+							"        pm.sendRequest({ url: `http://localhost:3000/users/${userid6}`, method: \"DELETE\" }, (err, res) => { });",
+							"    }",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"foo.bar\",\n    \"pwd\": \"{{user_6_pwd}}\",\n    \"firstname\": \"{{user_6_firstname}}\",\n    \"lastname\": \"{{user_6_lastname}}\",\n    \"avatar\": \"{{user_6_avatar}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signup - weak pwd 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /users - pwd must have at least 7 characters - status\", () => {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /users - pwd must have at least 7 characters - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"invalid_data\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let username6 = pm.environment.get(\"user_6_username\");",
+							"let userid6;",
+							"",
+							"pm.sendRequest({",
+							"    url: `http://localhost:3000/users?username=${username6}`,",
+							"    header: {",
+							"        \"Content-Type\": \"application/json\"",
+							"    }",
+							"}, (err, res) => {",
+							"    let resBody = res.json()[0];",
+							"    if (resBody) {",
+							"        userid6 = resBody.id",
+							"        pm.sendRequest({ url: `http://localhost:3000/users/${userid6}`, method: \"DELETE\" }, (err, res) => { });",
+							"    }",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_6_username}}\",\n    \"pwd\": \"mliC-5\",\n    \"firstname\": \"{{user_6_firstname}}\",\n    \"lastname\": \"{{user_6_lastname}}\",\n    \"avatar\": \"{{user_6_avatar}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signup - weak pwd 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /users - pwd must have at least 1 special character - status\", () => {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /users - pwd must have at least 1 special character - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"invalid_data\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let username6 = pm.environment.get(\"user_6_username\");",
+							"let userid6;",
+							"",
+							"pm.sendRequest({",
+							"    url: `http://localhost:3000/users?username=${username6}`,",
+							"    header: {",
+							"        \"Content-Type\": \"application/json\"",
+							"    }",
+							"}, (err, res) => {",
+							"    let resBody = res.json()[0];",
+							"    if (resBody) {",
+							"        userid6 = resBody.id",
+							"        pm.sendRequest({ url: `http://localhost:3000/users/${userid6}`, method: \"DELETE\" }, (err, res) => { });",
+							"    }",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_6_username}}\",\n    \"pwd\": \"maliCC5\",\n    \"firstname\": \"{{user_6_firstname}}\",\n    \"lastname\": \"{{user_6_lastname}}\",\n    \"avatar\": \"{{user_6_avatar}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signup - weak pwd 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /users - pwd must have at least 1 number - status\", () => {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /users - pwd must have at least 1 number - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"invalid_data\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let username6 = pm.environment.get(\"user_6_username\");",
+							"let userid6;",
+							"",
+							"pm.sendRequest({",
+							"    url: `http://localhost:3000/users?username=${username6}`,",
+							"    header: {",
+							"        \"Content-Type\": \"application/json\"",
+							"    }",
+							"}, (err, res) => {",
+							"    let resBody = res.json()[0];",
+							"    if (resBody) {",
+							"        userid6 = resBody.id",
+							"        pm.sendRequest({ url: `http://localhost:3000/users/${userid6}`, method: \"DELETE\" }, (err, res) => { });",
+							"    }",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_6_username}}\",\n    \"pwd\": \"maliC-C\",\n    \"firstname\": \"{{user_6_firstname}}\",\n    \"lastname\": \"{{user_6_lastname}}\",\n    \"avatar\": \"{{user_6_avatar}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/users",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login - user 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /login - successful login - response without pwd - status\", () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"const avatarUrl = res.avatar;",
+							"const avatar = avatarUrl.substring(avatarUrl.lastIndexOf(\"/\")+1);",
+							"const payload = JSON.parse(atob(res.jwt.split(\".\")[1]));",
+							"",
+							"pm.test(\"POST /login - successful login - response without pwd - response\", () => {",
+							"  pm.expect(!!payload.iat && !!payload.exp && !!payload.sub).to.be.true;",
+							"  pm.expect(payload.iat).to.be.a(\"number\");",
+							"  pm.expect(payload.exp).to.be.a(\"number\");",
+							"  pm.expect(payload.exp - payload.iat).to.be.eql(parseInt(pm.environment.get(\"jwt_expiration\")));",
+							"  pm.expect(res.username).to.eql(pm.environment.get(\"user_3_username\"));",
+							"  pm.expect(res.firstname).to.eql(pm.environment.get(\"user_3_firstname\"));",
+							"  pm.expect(res.lastname).to.eql(pm.environment.get(\"user_3_lastname\"));",
+							"  pm.expect(avatar).to.eql(pm.environment.get(\"user_3_avatar\"));",
+							"  //(hashed) pwd must not be returned",
+							"  pm.expect(res.pwd).to.eql(null);",
+							"});",
+							"pm.environment.set(\"user_3_jwt\", res.jwt);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_3_username}}\",\n    \"pwd\": \"{{user_3_pwd}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login - user 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /login - successful login - response without pwd - status\", () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"const avatarUrl = res.avatar;",
+							"const avatar = avatarUrl.substring(avatarUrl.lastIndexOf(\"/\")+1);",
+							"const payload = JSON.parse(atob(res.jwt.split(\".\")[1]));",
+							"",
+							"pm.test(\"POST /login - successful login - response without pwd - response\", () => {",
+							"  pm.expect(!!payload.iat && !!payload.exp && !!payload.sub).to.be.true;",
+							"  pm.expect(payload.iat).to.be.a(\"number\");",
+							"  pm.expect(payload.exp).to.be.a(\"number\");",
+							"  pm.expect(payload.exp - payload.iat).to.be.eql(parseInt(pm.environment.get(\"jwt_expiration\")));",
+							"  pm.expect(res.username).to.eql(pm.environment.get(\"user_4_username\"));",
+							"  pm.expect(res.firstname).to.eql(pm.environment.get(\"user_4_firstname\"));",
+							"  pm.expect(res.lastname).to.eql(pm.environment.get(\"user_4_lastname\"));",
+							"  pm.expect(avatar).to.eql(pm.environment.get(\"user_4_avatar\"));",
+							"  //(hashed) pwd must not be returned",
+							"  pm.expect(res.pwd).to.eql(null);",
+							"});",
+							"pm.environment.set(\"user_4_jwt\", res.jwt);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_4_username}}\",\n    \"pwd\": \"{{user_4_pwd}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login - non-existing-user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /login - non-existing user - status\", () => {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /login - non-existing user - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"login_fail\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"rubish\",\n    \"pwd\": \"{{user_3_pwd}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login - wrong-pwd",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"POST /login - wrong pwd - status\", () => {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"const res = pm.response.json();",
+							"pm.test(\"POST /login - wrong pwd - response\", () => {",
+							"  pm.expect(res.errorMessage).to.eql(pm.environment.get(\"login_fail\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{user_3_username}}\",\n    \"pwd\": \"rubish\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/login",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

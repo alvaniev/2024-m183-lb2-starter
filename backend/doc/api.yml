@@ -1,0 +1,775 @@
+openapi: 3.0.0
+info:
+  title: API für Forum
+  description: Endpoints für Forum-Applikation
+  version: 0.2.10
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/alvaniev.net/2021-forum/0.2.1
+  - url: http://localhost:3000
+
+paths:
+
+  /postings:
+    get:
+      description: Gibt alle Toplevel-Postings zurück.
+      responses:
+        '200':
+          description: Liste mit allen Toplevel-Postings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputArray'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+    post:
+      description: Fügt ein Toplevel-Posting hinzu
+      requestBody:
+        description: Inhalt und Autor des Toplevel-Postings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postingInputObject'
+      responses:
+        '201':
+          description: Das neu erstellte Posting.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/toplevelPostingGeneratedObject'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+  /postings/{id}:
+    get:
+      description: Gibt das Posting mit dieser ID zurück
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des gesuchten Postings
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Gesuchtes Posting mit betreffender Id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputObject'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+  /users/{id}/postings:
+    get:
+      description: Gibt alle Postings des Autors mit der ID {id} zurück
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Autors
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Liste der Postings, die vom Autor mit der ID {id} erstellt wurden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputArrayShort'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage403'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+  /postings/{id}/postings:
+    get:
+      description: Gibt alle Sub-Postings eines Parent-Postings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Parent-Postings
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Liste der Postings mit ID gemäss Parameter-Liste.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputArray'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+    post:
+      description: Fügt ein Sub-Posting an das Posting mit der betreffend ID hinzu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Postings an dem das Sub-Posting hinzugefügt wird
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      requestBody:
+        description: Inhalt und Autor des Sub-Postings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postingInputObject'
+      responses:
+        '201':
+          description: Das neu erstellte Posting.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subPostingGeneratedObject'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+
+
+  /login:
+    post:
+      description: Authentisierung mit Hilfe Username/PWD. Erfolgreiche Authentisierung gibt JWT zurück.
+      requestBody:
+        description: Username / PWD
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userLoginInputObject'
+      responses:
+        '200':
+          description: Authentisierung erfolgreich. Als Response wird der Benutzer mit dem JWT zurückgegeben.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userLoginOutputObject'
+        '401':
+          description: Authentisierung nicht erfolgreich. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage401'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+  /users:
+    get:
+      description: Gibt alle Benutzer zurück, die den Attributen gemäss Query-String entsprechen. Gibt alle Benutzer zurück, falls kein Query-String vorhanden ist.
+      parameters:
+        - name: firstname
+          in: query
+          required: false
+          description: Vorname des gesuchten Benutzers
+          schema:
+            type : string
+            example: Grady
+          style: form
+          explode: true
+        - name: lastname
+          in: query
+          required: false
+          description: Nachname des gesuchten Benutzers
+          schema:
+            type : string
+            example: Booch
+          style: form
+          explode: true
+        - name: username
+          in: query
+          required: false
+          description: Username des gesuchten Benutzers
+          schema:
+            type : string
+            example: gbo@oonet.com
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Liste der gesuchten Benutzer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userOutputArray'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+    post:
+      description: Einen neuen Benutzer registrieren / hinzufügen
+      requestBody:
+        description: Username, Vorname, Nachname, Passwort und Avatar der neuen Benuzters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userInputObject'
+      responses:
+        '201':
+          description: Der neu erstellte Benutzer mit zugewiesener ID. PWD wird normlerweise nie mitgeliefert, auch nicht als Hash. Hier im Playground-Umfeld zur Veranschaulichung.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userSignupOutputObject'
+        '409':
+          description: Conflict. Username bereits vergeben / Benutzer existiert bereits. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage409'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+  /users/{id}:
+    delete:
+      description: Löscht den Benutzer mit der ID gemäss Path-Parameter 
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des zu löschenden Benutzers
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Anzahl der gelöschten Benutzer (immer 1).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oneDeletedUser'
+        '404':
+          description: Not Found. Benutzer mit der entsprechenden ID nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/noDeletedUser'
+    get:
+      description: Gibt Benutzer mit entsprechender ID zurück
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des gesuchten Benutzers
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Der gesuchte Benutzer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userOutputObject'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage403'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+
+
+  /users/{id}/votes:
+    post:
+      description: Ein Up- oder Downvote zu einem Posting hinzufügen
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User-ID des Voters
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      requestBody:
+        description: Posting-ID mit Up- oder Downvote
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/voteInputObject'
+      responses:
+        '201':
+          description: Das aktualisierte Posting mit dem inkerementierten Vote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputObject'
+        '200':
+          description: Es existierte bereits ein Voting von diesem Voter. Posting (ohne Inkrement) wird zurückgegeben. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postingOutputObject'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorMessage500'
+
+  /users/{userId}/votes/{postingId}:
+    delete:
+      description: Löscht den Vote des Benutzers <userId> zum Posting <postingID>
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+        - name: postingId
+          in: path
+          required: true
+          description: ID es Postings
+          schema:
+            type : integer
+            minimum: 1
+            maximum: 1
+          style: simple
+          explode: false
+      responses:
+        '200':
+          description: Anzahl der gelöschten Benutzer (immer 1).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/oneDeletedVote'
+        '404':
+          description: Not Found. Vote des Benutzers zum Posting nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/noDeletedVote'
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    userInputObject:
+      type: object
+      properties:
+        username:
+          type: string
+          example: j.bond@mi6.gov
+        pwd:
+          type: string
+          example: 123
+        firstname:
+          type: string
+          example: James
+        lastanme:
+          type: string
+          example: Bond
+        avatar:
+          type: string
+          example: avatar09.svg
+    userOutputObject:
+      type: object
+      properties:
+        avatar:
+          type: string
+          example: http://localhost:3000/avatar09.svg
+        id:
+          type: number
+          example: 26
+        firstname:
+          type: string
+          example: Grady
+        lastanme:
+          type: string
+          example: Booch
+        pwd:
+          type: string
+          nullable: true
+          example: null
+          description: Gibt immer den NULL-Value zurück
+        username:
+          type: string
+          example: gbo@oonet.com
+        updateAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+    userLoginInputObject:
+      type: object
+      properties:
+        username:
+          type: string
+          example: dr@bell.org
+        pwd:
+          type: string
+          example: 123
+    userLoginOutputObject:
+      type: object
+      properties:
+        avatar:
+          type: string
+          example: http://localhost:3000/avatar05.svg
+        id:
+          type: number
+          example: 6
+        firstname:
+          type: string
+          example: Dennis
+        lastanme:
+          type: string
+          example: Ritchie
+        username:
+          type: string
+          example: dr@bell.org
+        pwd:
+          type: string
+          nullable: true
+          example: null
+          description: Gibt immer den NULL-Value zurück
+        updateAt:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        jwt:
+          type: string
+          description: JSON Web Token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNjYxOTM4MTgyLCJleHAiOjE2NjE5NDE3ODIsImF1ZCI6IjMifQ.OdPwYiVcJTXgp6QIVPeB3QH-vK9anmUuzdzbBCq5-II
+    userSignupOutputObject:
+      type: object
+      properties:
+        avatar:
+          type: string
+          example: http://localhost:3000/avatar09.svg
+        id:
+          type: number
+          example: 6
+        firstname:
+          type: string
+          example: James
+        lastanme:
+          type: string
+          example: Bond
+        username:
+          type: string
+          example: j.bond@mi6.gov
+        pwd:
+          type: string
+          nullable: true
+          example: null
+          description: Gibt immer den NULL-Value zurück
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+    postingInputObject:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+          example: Mara escoda
+        content:
+          type: string
+          nullable: true
+          example: Aliquam faucibus purus in massa tempor nec feugiat nisl pretium.
+        authorId:
+          type: integer
+          example: 30
+    voteInputObject:
+      type: object
+      properties:
+        postingId:
+          type: integer
+          example: 88
+        iupvote:
+          type: boolean
+          example: true
+    postingOutputObject:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 86
+        title:
+          type: string
+          nullable: true
+          example: Maxime Qui Rem
+        content:
+          type: string
+          nullable: true
+          example: Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+        timestamp:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        upvotes:
+          type: integer
+          example: 2
+        downvotes:
+          type: integer
+          example: 1
+        parentId:
+          type: integer
+          nullable: true
+          example: null
+        authorId:
+          type: integer
+          example: 26
+        firstname:
+          type: string
+          nullable: true
+          example: Grady
+        lastname:
+          type: string
+          nullable: true
+          example: Booch
+        username:
+          type: string
+          example: gbo@oonet.com
+        avatar:
+          type: string
+          nullable: true
+          example: http://localhost:3000/avatar09.svg
+    postingOutputObjectShort:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 86
+        title:
+          type: string
+          nullable: true
+          example: Maxime Qui Rem
+        content:
+          type: string
+          nullable: true
+          example: Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+        timestamp:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        authorId:
+          type: integer
+          example: 26
+        parentId:
+          type: integer
+          nullable: true
+          example: null
+    toplevelPostingGeneratedObject:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 104
+        title:
+          type: string
+          nullable: true
+          example: Mara escoda
+        content:
+          type: string
+          nullable: true
+          example: Aliquam faucibus purus in massa tempor nec feugiat nisl pretium.
+        authorId:
+          type: integer
+          example: 30
+        timestamp:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+    subPostingGeneratedObject:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 104
+        title:
+          type: string
+          nullable: true
+          example: Mara escoda
+        content:
+          type: string
+          nullable: true
+          example: Aliquam faucibus purus in massa tempor nec feugiat nisl pretium.
+        authorId:
+          type: integer
+          example: 30
+        parentId:
+          type: integer
+          example: 101
+        timestamp:
+          type: string
+          example: 2022-08-27T13:24:12.603Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2022-08-27T13:24:12.603Z
+    postingOutputArray:
+      type: array
+      items: 
+        $ref: '#/components/schemas/postingOutputObject'
+    postingOutputArrayShort:
+      type: array
+      items: 
+        $ref: '#/components/schemas/postingOutputObjectShort'
+    userOutputArray:
+      type: array
+      items: 
+        $ref: '#/components/schemas/userOutputObject'
+    errorMessage401:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+          example: Authentication failed.
+    errorMessage403:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+          example: Forbidden
+    errorMessage409:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+          example: User already exists.
+    errorMessage500:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+          example: connect ECONNREFUSED 127.0.0.1:3306
+    oneDeletedUser:
+      type: object
+      properties:
+        usersDeleted:
+          type: number
+          example: 1
+    noDeletedUser:
+      type: object
+      properties:
+        usersDeleted:
+          type: number
+          example: 0
+    oneDeletedVote:
+      type: object
+      properties:
+        votesDeleted:
+          type: number
+          example: 1
+    noDeletedVote:
+      type: object
+      properties:
+        votesDeleted:
+          type: number
+          example: 0

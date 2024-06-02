@@ -1,0 +1,22 @@
+version: "3"
+services:
+  db:
+    image: mysql:8
+    container_name: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  dbdata:
+    external: false

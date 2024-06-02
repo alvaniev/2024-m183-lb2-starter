@@ -1,0 +1,29 @@
+{
+  "name": "2021-forum-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "newman run testing/lb2-collection.json -e testing/env.json",
+    "dbup": "docker-compose -f db.yml up -d",
+    "dbdown": "docker-compose -f db.yml down",
+    "start": "nodemon api.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.2.5",
+    "newman": "^6.1.2",
+    "sequelize": "^6.28.0",
+    "validator": "^13.12.0",
+    "winston": "^3.3.3"
+  }
+}
